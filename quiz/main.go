@@ -10,6 +10,7 @@ import (
 
 type quiz struct {
 	filename      string
+	timeLimit     int
 	questionCount int
 	correctCount  int
 }
@@ -17,12 +18,14 @@ type quiz struct {
 func main() {
 	// parse args
 	filePtr := flag.String("file", "problems.csv", "Path to the quiz csv file.")
+	limitPtr := flag.Int("timeLimit", 30, "Quiz time limit in second.")
 
 	flag.Parse()
 
 	// create the quiz
 	q := quiz{
-		filename: *filePtr,
+		filename:  *filePtr,
+		timeLimit: *limitPtr,
 	}
 
 	// proctor the quiz
@@ -61,7 +64,7 @@ func proctor(q quiz) {
 
 func ask(question string, answer string) bool {
 	// Ask the question
-	fmt.Print("What is ", question, "? ")
+	fmt.Print(question)
 
 	// define a string variable to hold the response
 	var input string

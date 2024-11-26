@@ -38,6 +38,7 @@ func proctor(q quiz) {
 	file, err := os.Open(q.filename)
 	if err != nil {
 		fmt.Println("Error reading file:", err)
+		os.Exit(1)
 	}
 	// Create a reader opject from the open file
 	r := csv.NewReader(file)
@@ -71,7 +72,8 @@ func ask(question string, answer string) bool {
 
 	// get input from the user at terminal, passing an
 	// address to variable we want the input stored
-	fmt.Scanln(&input)
+	// Scanf will allow us to pull the 1 word answer
+	fmt.Scanf("%s\n", &input)
 
 	// Check if the input matches the answer
 	if input == answer {

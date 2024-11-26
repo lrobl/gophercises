@@ -4,57 +4,84 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
-	"io"
 	"os"
+	"strings"
 )
 
 type quiz struct {
 	filename      string
 	timeLimit     int
+	problems      []problem
 	questionCount int
 	correctCount  int
 }
 
+type problem struct {
+	question string
+	answer   string
+}
+
 func main() {
 	// parse args
-	filePtr := flag.String("file", "problems.csv", "Path to the quiz csv file.")
-	limitPtr := flag.Int("timeLimit", 30, "Quiz time limit in second.")
+	fileName := flag.String("fileName", "problems.csv", "Path to the quiz csv file in format question, answer")
+	timeLimit := flag.Int("timeLimit", 30, "Quiz time limit in second.")
 
 	flag.Parse()
 
-	// create the quiz
-	q := quiz{
-		filename:  *filePtr,
-		timeLimit: *limitPtr,
-	}
+	// parse the csv into a quiz object
+	q := parseQuizCSV(*fileName, *timeLimit)
+	fmt.Println(q)
 
 	// proctor the quiz
 	proctor(q)
 
 }
 
-func proctor(q quiz) {
+func parseQuizCSV(fileName string, timeLimit int) quiz {
 	// Open the file and handle any error
-	file, err := os.Open(q.filename)
+	file, err := os.Open(fileName)
 	if err != nil {
 		fmt.Println("Error reading file:", err)
 		os.Exit(1)
 	}
 	// Create a reader opject from the open file
 	r := csv.NewReader(file)
+	records, err := r.ReadAll()
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+	fmt.Println(records)
 
-	// loop through each row in the csv
-	for {
-		record, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
+	quizSize := len(records)
 
-		isCorrect := ask(record[0], record[1])
+	// save the questions and answers into a 2d slice
+	problems := make([]problem, quizSize)
+	for i, record := range records {
+		p := problem{
+			question: record[0],
+			answer:   strings.TrimSpace(record[1]),
+		}
+		problems[i] = p
+	}
+
+	q := quiz{
+		filename:      fileName,
+		timeLimit:     timeLimit,
+		problems:      problems,
+		questionCount: quizSize,
+		correctCount:  0,
+	}
+
+	return q
+
+}
+
+func proctor(q quiz) {
+	// loop through each problem in the quiz
+	for _, problem := range q.problems {
+
+		isCorrect := ask(problem.question, problem.answer)
 		q.questionCount++
 		if isCorrect {
 			q.correctCount++

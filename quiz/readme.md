@@ -2,12 +2,6 @@
 
 Exercise details copied from here: https://courses.calhoun.io/lessons/les_goph_01
 
-## TODO
-Things to add to my implmentation to clean it up
-- [ ] Add a string to the display of the question: "Problem #i: 5+5 " for example
-- [ ] Only give the results string at the end
-- [ ] add a timer using the `time.NewTimer(duration)` function. This will create a channel that it will write to when time it up. Use a select statement to wait for a response over multiple channels. 2 go routines, 1 is the asking the question, the other is the timer
-
 ## Exercise details
 This exercise is broken into two parts to help simplify the process of explaining it as well as to make it easier to solve. The second part is harder than the first, so if you get stuck feel free to move on to another problem then come back to part 2 later.
 

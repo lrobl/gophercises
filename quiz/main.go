@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
 type quiz struct {
@@ -78,21 +79,36 @@ func parseQuizCSV(fileName string, timeLimit int) quiz {
 }
 
 func proctor(q quiz) {
-	// loop through each problem in the quiz
-	for _, problem := range q.problems {
 
-		isCorrect := ask(problem.question, problem.answer)
-		q.questionCount++
-		if isCorrect {
-			q.correctCount++
+	// Create and start a timer
+	timer := time.NewTimer(time.Duration(q.timeLimit * int(time.Second)))
+
+	quizChannel := make(chan string)
+	go func() {
+		// loop through each problem in the quiz
+		for i, problem := range q.problems {
+
+			isCorrect := ask(i+1, problem.question, problem.answer)
+			if isCorrect {
+				q.correctCount++
+			}
 		}
-		fmt.Print(q.correctCount, " out of ", q.questionCount, " correct.\n\n")
+		quizChannel <- "DONE"
+	}()
+
+	select {
+	case <-timer.C:
+		fmt.Print("\nTime is up: You scored ", q.correctCount, " out of ", q.questionCount, " correct.\n\n")
+	case <-quizChannel:
+		fmt.Print("\nQuiz complete: You scored ", q.correctCount, " out of ", q.questionCount, " correct.\n\n")
+
 	}
+
 }
 
-func ask(question string, answer string) bool {
+func ask(num int, question string, answer string) bool {
 	// Ask the question
-	fmt.Print(question)
+	fmt.Print("Problem #", num, ":", question, " ")
 
 	// define a string variable to hold the response
 	var input string
@@ -104,10 +120,10 @@ func ask(question string, answer string) bool {
 
 	// Check if the input matches the answer
 	if input == answer {
-		fmt.Println("Correct!")
+		fmt.Print("Correct!\n\n")
 		return true
 	} else {
-		fmt.Println("Incorrect!")
+		fmt.Print("Incorrect!\n\n")
 		return false
 	}
 
